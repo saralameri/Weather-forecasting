@@ -19,5 +19,11 @@ After a deeper review of the API result, I opted to have just 3 tables. The only
 
 Reconstructing the tables simplified the query to retrieve the data and made the data make sense and logical.
 
+### inserting in the table 
+to insert all the values in the table I made sure to name each value in the key with a Json fila as "key_eachKeyInJson". later to insert every thing in the main table (api_res) other that the weather key, I had a for loop iterating through the API response appending to the the column names sting and values of those column name list. after having all the column names and values insert to the database.
+
+To insert the weather, get the PK of the row in api_res related to this weather (the API response we are inserting). then iterate through the weather list and for each weather insert in the relation table the api_res PK and the weather id. at the end if the weather isn't already in the weather table insert it.
+
+
 
 
