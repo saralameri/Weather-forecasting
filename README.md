@@ -22,6 +22,7 @@ to import the the database schema:
 	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 
 after importing the schema you will need to modify the database access string in the `config.ini` to do so:
+
 follow the following access string format:
 `postgresql://username:password@host:port/dbname[?paramspec]`
 
