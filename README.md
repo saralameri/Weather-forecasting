@@ -19,7 +19,7 @@ to import the the database schema:
 3. before contenuing this comand will create a database named "weather_forecast" so to avoid errors make sure you don't have a database with that name 
 	- run this comand -> `psql -h <host name> -U <username> -f <sql file path>`
 	- replace the `<host name>` and `<username>` with your host name 
-	- find the SQL file you are importing and copy and past it replacing <sql file path>
+	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 after importing the schema you will need to modify the database access string in the `config.ini` to do so:
 follow the following access string format:
 `postgresql://username:password@host:port/dbname[?paramspec]`
