@@ -13,11 +13,11 @@ when this file is ran it will fetch Paris current weather from OpenWeathermap AP
   - time
  
 # Running the Project
-to import the the database schema:
-1. open comand prompt 
-2. chand the directery to postgres bin file (where psql exist) the defult path is: "C:\Program Files\PostgreSQL\version\bin"
-3. before contenuing this comand will create a database named "weather_forecast" so to avoid errors make sure you don't have a database with that name 
-	- run this comand -> `psql -h <host name> -U <username> -f <sql file path>`
+to import the database schema:
+1. open command  prompt 
+2. change the directory to Postgres bin file (where psql exist) the default path is: "C:\Program Files\PostgreSQL\version\bin"
+3. before continuing, this command will create a database named "weather_forecast" so to avoid errors make sure you don't have a database with that name 
+	- run this command -> `psql -h <host name> -U <username> -f <sql file path>`
 	- replace the `<host name>` and `<username>` with your host name 
 	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 
