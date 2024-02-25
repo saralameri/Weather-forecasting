@@ -27,7 +27,7 @@ to import the database schema:
 after importing the schema you will need to modify the database access string to do so:
 
 Note:
-the default database access string `DB_CONNECTION` and the API call `API_CALL` are stored in the `.env` file and accessible through the Config class. this class allow you to retrieve and overwrite those variables.https://github.com/saralameri/Weather-forecasting/blob/main/README.md
+the default database access string `DB_CONNECTION` and the API call `API_CALL` are stored in the `.env` file and accessible through the Config class. this class allow you to retrieve and overwrite those variables.
 
 
 use the function `setDB_CONNECTION` with the Config object instance.
