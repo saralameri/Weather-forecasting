@@ -32,7 +32,11 @@ the default database access string `DB_CONNECTION` and the API call `API_CALL` a
 
 use the function `setDB_CONNECTION` with the Config object instance.
 follow the following access string format and pass it to the function:
+
+
 `postgresql://username:password@host:port/dbname[?paramspec]`
+
+
 that will overwrite the previous access string so all you have to do now is to get the updated one and you are set:
 use the function `getDB_CONNECTION` with the Config object instance, and store it's returned value to `DB_CONNECTION`
 
