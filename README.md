@@ -11,6 +11,8 @@ when this file is ran it will fetch Paris current weather from OpenWeathermap AP
   - Bytest
   - json
   - time
+  - os
+  - dotenv
  
 # Running the Project
 to import the database schema:
@@ -21,10 +23,18 @@ to import the database schema:
 	- replace the `<host name>` and `<username>` with your host name 
 	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 
-after importing the schema you will need to modify the database access string in the `config.ini` to do so:
 
-follow the following access string format:
+after importing the schema you will need to modify the database access string to do so:
+
+Note:
+the default database access string `DB_CONNECTION` and the API call `API_CALL` are stored in the `.env` file and accessible through the Config class. this class allow you to retrieve and overwrite those variables.https://github.com/saralameri/Weather-forecasting/blob/main/README.md
+
+
+use the function `setDB_CONNECTION` with the Config object instance.
+follow the following access string format and pass it to the function:
 `postgresql://username:password@host:port/dbname[?paramspec]`
+that will overwrite the previous access string so all you have to do now is to get the updated one and you are set:
+use the function `getDB_CONNECTION` with the Config object instance, and store it's returned value to `DB_CONNECTION`
 
 
 # Design Issues 
