@@ -3,23 +3,29 @@ from io import BytesIO
 import json
 import psycopg
 import time
-from configparser import ConfigParser
+# from configparser import ConfigParser
 
-print("hi")
-configFile = "config.ini"
-config = ConfigParser()
-config.read(configFile)
+from config import Config 
+
+config = Config()
+DB_CONNECTION = config.get("DB_CONNECTION")
+API_CALL = config.get("API_CALL")
+
+# configFile = "config.ini"
+# config = ConfigParser()
+# config.read(configFile)
 
 buffer = BytesIO()
 curl = pycurl.Curl()
 curl.setopt(
     curl.URL,
-    config["API"]["call"],
+    API_CALL,
 )
 curl.setopt(curl.WRITEDATA, buffer)
 
-with psycopg.connect(config["database"]["connection"]) as connection:
-    while True:
+
+while True:
+    with psycopg.connect(DB_CONNECTION) as connection:
         # emptying the buffer
         buffer.seek(0)
         buffer.truncate()
@@ -78,7 +84,5 @@ with psycopg.connect(config["database"]["connection"]) as connection:
                 cursor.execute(sql_insert)
 
             connection.commit()
-        print("see you in 5 min")
-        time.sleep(300)  # 300 sec = 5 min
-
-connection.close()
+            connection.close()
+    time.sleep(300)  # 300 sec = 5 min
