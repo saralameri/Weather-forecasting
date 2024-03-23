@@ -18,7 +18,7 @@ when this file is ran it will fetch the current weather from OpenWeathermap API 
 ***Before running this code you need to have PostgreSQL on your system. this code uses `psycopg-c` which needs `pg_config` provided by PostgreSQL.***
 
 
-**to import the database schema:**
+**1. to import the database schema:**
 1. open command  prompt 
 2. change the directory to Postgres bin file (where psql exist) the default path is: "C:\Program Files\PostgreSQL\version\bin"
 3. before continuing, this command will create a database named "weather_forecast" so to avoid errors make sure you don't have a database with that name 
@@ -27,7 +27,7 @@ when this file is ran it will fetch the current weather from OpenWeathermap API 
 	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 
 
-**after importing the schema you will need to set the database access string to do so:**
+**2. after importing the schema you will need to set the database access string to do so:**
 
 Note:
 The Config class allows you to retrieve and overwrite variables.
@@ -35,8 +35,8 @@ follow the following access string format:
 `postgresql://username:password@host:port/dbname[?paramspec]`
 
 you can follow either of those approaches: 
-1. create a `.env` an add in it the database access string. with using this approach the be set when creating an instance of the Config file.
-2. use the function `set(key, value)` to set the database access from the main file. the key I used is `DB_CONNECTION`
+a. create a `.env` an add in it the database access string. with using this approach the be set when creating an instance of the Config file.
+b. use the function `set(key, value)` to set the database access from the main file. the key I used is `DB_CONNECTION`
 
 
 after doing one of the options you will need to get the values in your main file as so
@@ -46,7 +46,8 @@ API_CALL = config.get(key)
 ```
 
 
-**finally you will need to add your API call:**
+**3. finally you will need to add your API call:**
+
 To do that you can follow the same steps as adding the database access string. the key I used for the API call variable is `API_CALL`.
 
 
