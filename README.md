@@ -1,5 +1,5 @@
-# Paris Weather Forecasting 
-when this file is ran it will fetch Paris current weather from OpenWeathermap API every 5 minutes. After fetching from OpenWeathermap it will store the result in a PostgreSQL database.
+# Weather Forecasting 
+when this file is ran it will fetch the current weather from OpenWeathermap API every 5 minutes. After fetching from OpenWeathermap it will store the result in a PostgreSQL database.
 
 # Tech stack
 - Python
@@ -24,21 +24,25 @@ to import the database schema:
 	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 
 
-after importing the schema you will need to modify the database access string to do so:
+after importing the schema you will need to set the database access string to do so:
 
 Note:
-the default database access string `DB_CONNECTION` and the API call `API_CALL` are stored in the `.env` file and accessible through the Config class. The Config class allows you to retrieve and overwrite those variables.
-
-
-use the function `setDB_CONNECTION` with the Config object instance.
-follow the following access string format and pass it to the function:
-
-
+The Config class allows you to retrieve and overwrite variables.
+follow the following access string format:
 `postgresql://username:password@host:port/dbname[?paramspec]`
 
+you can follow either of those approaches: 
+1. create a `.env` an add in it the database access string. with using this approach the be set when creating an instance of the Config file.
+2. use the function `set(key, value)` to set the database access from the main file. the key I used is `DB_CONNECTION`
 
-that will overwrite the previous access string so all you have to do now is to get the updated one and you are set:
-use the function `getDB_CONNECTION` with the Config object instance, and store it's returned value to `DB_CONNECTION`
+
+after doing one of the options you will need to get the values in your main file as so
+```
+DB_CONNECTION = config.get(key)
+API_CALL = config.get(key)
+```
+
+finally you will need to add your API call. to do that you can follow the same steps as adding the database access string. the key I used for the API call variable is `API_CALL`.
 
 
 # Design Issues 
