@@ -15,6 +15,9 @@ when this file is ran it will fetch the current weather from OpenWeathermap API 
   - dotenv
  
 # Running the Project
+Before running this code you need to have PostgreSQL on your system. this system uses `psycopg-c` which needs `pg_config` provided by PostgreSQL.
+
+
 to import the database schema:
 1. open command  prompt 
 2. change the directory to Postgres bin file (where psql exist) the default path is: "C:\Program Files\PostgreSQL\version\bin"
