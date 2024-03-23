@@ -15,7 +15,7 @@ when this file is ran it will fetch the current weather from OpenWeathermap API 
   - dotenv
  
 # Running the Project
-Before running this code you need to have PostgreSQL on your system. this system uses `psycopg-c` which needs `pg_config` provided by PostgreSQL.
+Before running this code you need to have PostgreSQL on your system. this code uses `psycopg-c` which needs `pg_config` provided by PostgreSQL.
 
 
 to import the database schema:
