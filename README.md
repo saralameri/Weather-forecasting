@@ -15,10 +15,10 @@ when this file is ran it will fetch the current weather from OpenWeathermap API 
   - dotenv
  
 # Running the Project
-Before running this code you need to have PostgreSQL on your system. this code uses `psycopg-c` which needs `pg_config` provided by PostgreSQL.
+***Before running this code you need to have PostgreSQL on your system. this code uses `psycopg-c` which needs `pg_config` provided by PostgreSQL.***
 
 
-to import the database schema:
+**to import the database schema:**
 1. open command  prompt 
 2. change the directory to Postgres bin file (where psql exist) the default path is: "C:\Program Files\PostgreSQL\version\bin"
 3. before continuing, this command will create a database named "weather_forecast" so to avoid errors make sure you don't have a database with that name 
@@ -27,7 +27,7 @@ to import the database schema:
 	- find the SQL file you are importing and copy its path replacing `<sql file path>`
 
 
-after importing the schema you will need to set the database access string to do so:
+**after importing the schema you will need to set the database access string to do so:**
 
 Note:
 The Config class allows you to retrieve and overwrite variables.
@@ -45,7 +45,8 @@ DB_CONNECTION = config.get(key)
 API_CALL = config.get(key)
 ```
 
-finally you will need to add your API call. to do that you can follow the same steps as adding the database access string. the key I used for the API call variable is `API_CALL`.
+**finally you will need to add your API call:**
+To do that you can follow the same steps as adding the database access string. the key I used for the API call variable is `API_CALL`.
 
 
 # Design Issues 
