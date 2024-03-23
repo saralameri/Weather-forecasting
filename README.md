@@ -51,6 +51,9 @@ API_CALL = config.get(key)
 To do that you can follow the same steps as adding the database access string. the key I used for the API call variable is `API_CALL`.
 
 
+***now you are ready to run the code!***
+
+
 # Design Issues 
 ### Database tables 
 After dissecting the API Json response, I could see that is has some keys with Json values.  To acknowledge this structure, I started by creating a separate table for each of those keys which are connected back to a table that contains the rest of keys. For the code purpose this database schema is impractical and unnecessary. 
