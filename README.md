@@ -6,7 +6,7 @@ when this file is ran it will fetch the current weather from OpenWeathermap API 
 - PostgreSQL 
 - Elephantsql
 - Python libraries 
-  - pycurl
+  - requests
   - psycopg
   - Bytest
   - json
@@ -35,7 +35,7 @@ follow the following access string format:
 `postgresql://username:password@host:port/dbname[?paramspec]`
 
 you can follow either of those approaches: 
-a. create a `.env` an add in it the database access string. with using this approach the be set when creating an instance of the Config file.
+a. create a `.env` and add in it the database access string. with using this approach the be set when creating an instance of the Config file.
 b. use the function `set(key, value)` to set the database access from the main file. the key I used is `DB_CONNECTION`
 
 
