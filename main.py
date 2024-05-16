@@ -8,9 +8,10 @@ config = Config()
 DB_CONNECTION = config.get("DB_CONNECTION")
 API_CALL = config.get("API_CALL")
 
+
 def callAPI():
     """A simple function that calls the API and return its response code and response body"""
-    
+
     # calling the API
     response = requests.get(API_CALL)
 
@@ -22,6 +23,7 @@ def callAPI():
 
     return response_code, data
 
+
 def get_queryParams(data):
     """
     Iterating through the response body gathering the SQL query parameters.
@@ -29,8 +31,8 @@ def get_queryParams(data):
 
     If apart of the response body has a single value then the key will be added in the col.
 
-    In the other case if it is a dictionary then the key_dictionaryKey for each key in the dictionary 
-    will be added to the col. 
+    In the other case if it is a dictionary then the key_dictionaryKey for each key in the dictionary
+    will be added to the col.
 
     Parameters
     ----------
@@ -57,10 +59,10 @@ def get_queryParams(data):
 
 def insert_weather():
     """
-    Wether in the OpenWeather API contain a list of one or more instance of type dictionary. 
+    Wether in the OpenWeather API contain a list of one or more instance of type dictionary.
     To handle this specific situation a separate function is needed
 
-    in the DB we have 3 tables 
+    in the DB we have 3 tables
         api_res -> storing the response body other than the weather
         weather -> stores the weather
         res_weather_relation -> relationship between weather and the rest of the response
@@ -70,25 +72,26 @@ def insert_weather():
 
     then in the relationship table we connect the response with the relates weather.
     """
-     
+
     for inst in data["weather"]:
         weatherID = inst["id"]
         weatherPK = cursor.execute(
             f"select id from weather where id = {weatherID}"
         ).fetchall()
 
-        # if the id doesn't already exist in the weather table 
+        # if the id doesn't already exist in the weather table
         if len(weatherPK) == 0:
             sql_insert = "INSERT INTO weather ({}) VALUES ({});".format(
                 (", ".join(inst.keys())), ", ".join("%s" for _ in inst)
             )
             cursor.execute(sql_insert, list(inst.values()))
 
-        # update the relation table 
+        # update the relation table
         sql_insert = "INSERT INTO res_weather_relation (res_id, weather_id) VALUES ({}, {});".format(
             PK, inst["id"]
         )
         cursor.execute(sql_insert)
+
 
 while True:
     connection = psycopg.connect(DB_CONNECTION)
@@ -105,7 +108,7 @@ while True:
 
     # collect the SQL query parameters
     cols, val = get_queryParams(data)
-    
+
     # insert in the DB
     sql_insert = "INSERT INTO api_res ({}) VALUES ({});".format(
         cols, ", ".join("%s" for _ in cols.split(","))
