@@ -94,6 +94,8 @@ def insert_weather():
         affected_rows = cursor.rowcount
         if affected_rows > 0:
             print(f"successfully added API call {PK} to the database.")
+        else:
+            print("failed to add to the database")
 
 
 while True:
