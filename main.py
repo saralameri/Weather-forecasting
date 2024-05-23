@@ -9,7 +9,7 @@ DB_CONNECTION = config.get("DB_CONNECTION")
 API_CALL = config.get("API_CALL")
 
 
-def callAPI():
+def call_api():
     """A simple function that calls the API and return its response code and response body"""
 
     # calling the API
@@ -24,37 +24,37 @@ def callAPI():
     return response_code, data
 
 
-def get_queryParams(data):
+def get_query_params(data):
     """
     Iterating through the response body gathering the SQL query parameters.
-    Two things are collected, the columns (col) and the values to store in them (val).
+    Two things are collected, the columns and the values to store in them.
 
-    If apart of the response body has a single value then the key will be added in the col.
+    If apart of the response body has a single value then the key will be added in the columns.
 
     In the other case if it is a dictionary then the key_dictionaryKey for each key in the dictionary
-    will be added to the col.
+    will be added to the columns.
 
     Parameters
     ----------
     data -> json
     """
 
-    # col stores SQL query columns in a string
-    cols = ""
-    # val stores SQL query values in a list
-    val = list()
+    # columns stores SQL query columns in a string
+    columns = ""
+    # values stores SQL query values in a list
+    values = list()
 
     for key in data:
         if isinstance(data[key], dict) and key != "weather":
-            temp = f"{key}_" + f", {key}_".join(data[key].keys())
-            cols = ", ".join([cols, temp])
-            val.extend(data[key].values())
+            curr_columns = f"{key}_" + f", {key}_".join(data[key].keys())
+            columns = ", ".join([columns, curr_columns])
+            values.extend(data[key].values())
 
         elif key != "weather":
-            cols = ", ".join([cols, key])
-            val.append(data[key])
+            columns = ", ".join([columns, key])
+            values.append(data[key])
 
-    return cols.strip(", "), val
+    return columns.strip(", "), values
 
 
 def insert_weather():
@@ -73,47 +73,52 @@ def insert_weather():
     then in the relationship table we connect the response with the relates weather.
     """
 
-    for inst in data["weather"]:
-        weatherID = inst["id"]
-        weatherPK = cursor.execute(
-            f"select id from weather where id = {weatherID}"
+    for instance in data["weather"]:
+        weather_id = instance["id"]
+        weather_pk = cursor.execute(
+            f"select id from weather where id = {weather_id}"
         ).fetchall()
 
         # if the id doesn't already exist in the weather table
-        if len(weatherPK) == 0:
+        if len(weather_pk) == 0:
             sql_insert = "INSERT INTO weather ({}) VALUES ({});".format(
-                (", ".join(inst.keys())), ", ".join("%s" for _ in inst)
+                (", ".join(instance.keys())), ", ".join("%s" for _ in instance)
             )
-            cursor.execute(sql_insert, list(inst.values()))
+            cursor.execute(sql_insert, list(instance.values()))
 
         # update the relation table
         sql_insert = "INSERT INTO res_weather_relation (res_id, weather_id) VALUES ({}, {});".format(
-            PK, inst["id"]
+            PK, instance["id"]
         )
         cursor.execute(sql_insert)
+        affected_rows = cursor.rowcount
+        if affected_rows > 0:
+            print(f"successfully added API call {PK} to the database.")
 
 
 while True:
-    connection = psycopg.connect(DB_CONNECTION)
-    response_code, data = callAPI()
+    response_code, data = call_api()
 
     # handle if the response code indicates an error
     if response_code != 200:
-        print(f"Failed to fetch data. Response code: {response_code}")
+        print(f"Failed to fetch data. Response code: {response_code}.")
         break
+    
+    # If the response code indicates a successful request continue with the rest of the code
+    print(f"successful API call. Response code: {response_code}.")
+    connection = psycopg.connect(DB_CONNECTION)
 
-    # If the response code indicates a successful request
     # Open a cursor to perform database operations
     cursor = connection.cursor()
 
     # collect the SQL query parameters
-    cols, val = get_queryParams(data)
+    columns, values = get_query_params(data)
 
     # insert in the DB
     sql_insert = "INSERT INTO api_res ({}) VALUES ({});".format(
-        cols, ", ".join("%s" for _ in cols.split(","))
+        columns, ", ".join("%s" for _ in columns.split(","))
     )
-    cursor.execute(sql_insert, val)
+    cursor.execute(sql_insert, values)
 
     PK = cursor.execute(
         "SELECT res_id FROM api_res ORDER BY res_id DESC LIMIT 1"
