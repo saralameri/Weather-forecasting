@@ -8,6 +8,8 @@ config = Config()
 DB_CONNECTION = config.get("DB_CONNECTION")
 API_CALL = config.get("API_CALL")
 
+def delete_incomplete_row():
+    cursor.execute("delete from api_res order by res_id desc limit 1")
 
 def call_api():
     """A simple function that calls the API and return its response code and response body"""
@@ -86,16 +88,19 @@ def insert_weather():
             )
             cursor.execute(sql_insert, list(instance.values()))
 
+            # checking if the insert was successful
+            if cursor.rowcount == 0:
+                raise Exception(1)
+
         # update the relation table
-        sql_insert = "INSERT INTO res_weather_relation (res_id, weather_id) VALUES ({}, {});".format(
-            PK, instance["id"]
-        )
-        cursor.execute(sql_insert)
-        affected_rows = cursor.rowcount
-        if affected_rows > 0:
-            print(f"successfully added API call {PK} to the database.")
+        sql_insert = "INSERT INTO res_weather_relation (res_id, weather_id) VALUES (%s, %s);"
+        cursor.execute(sql_insert, (PK, instance["id"]))
+
+        # checking if the insert was successful
+        if cursor.rowcount > 0:
+            print(f"Successfully added API call {PK} to the database.")
         else:
-            print("failed to add to the database")
+            raise Exception(1)
 
 
 while True:
@@ -117,17 +122,27 @@ while True:
     columns, values = get_query_params(data)
 
     # insert in the DB
-    sql_insert = "INSERT INTO api_res ({}) VALUES ({});".format(
-        columns, ", ".join("%s" for _ in columns.split(","))
-    )
-    cursor.execute(sql_insert, values)
+    try:
+        sql_insert = "INSERT INTO api_res ({}) VALUES ({});".format(
+            columns, ", ".join("%s" for _ in columns.split(","))
+        )
+        cursor.execute(sql_insert, values)
+        if cursor.rowcount == 0:
+            raise Exception()
 
-    PK = cursor.execute(
-        "SELECT res_id FROM api_res ORDER BY res_id DESC LIMIT 1"
-    ).fetchone()[0]
+        PK = cursor.execute(
+            "SELECT res_id FROM api_res ORDER BY res_id DESC LIMIT 1"
+        ).fetchone()[0]
+        if cursor.rowcount == 0:
+            raise Exception(1)
 
-    insert_weather()
+        insert_weather()
 
+    except Exception as error:
+        if error.args == 1:
+            delete_incomplete_row()
+        print('Error: Failed to add to the database')
+        
     cursor.close()
     connection.commit()
     connection.close()
