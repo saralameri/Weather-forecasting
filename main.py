@@ -42,24 +42,68 @@ def get_query_params(data):
     """
 
     # columns stores SQL query columns in a string
-    columns = ""
-    # values stores SQL query values in a list
-    values = list()
+    columns = [
+        "coord_lon",
+        "coord_lat",
+        "base",
+        "main_temp",
+        "main_feels_like",
+        "main_temp_min",
+        "main_temp_max",
+        "main_pressure",
+        "main_humidity",
+        "main_sea_level",
+        "main_grnd_level",
+        "visibility",
+        "wind_speed",
+        "wind_deg",
+        "wind_gust",
+        "dt",
+        "sys_type",
+        "sys_id",
+        "sys_message",
+        "sys_country",
+        "sys_sunrise",
+        "sys_sunset",
+        "timezone",
+        "id",
+        "name",
+        "cod",
+        "clouds_all",
+        "rain_1h",
+        "rain_3h",
+        "snow_1h",
+        "snow_3h"
+    ]
+
+    # values stores SQL query values (initialized to NONE) in a list 
+    values = [None] * 31
+
+
+
 
     for key in data:
         if isinstance(data[key], dict) and key != "weather":
-            curr_columns = f"{key}_" + f", {key}_".join(data[key].keys())
-            columns = ", ".join([columns, curr_columns])
-            values.extend(data[key].values())
-
+            for internal_key in data[key]:
+                name = f"{key}_" + internal_key
+                if name in columns:
+                    index = columns.index(name)
+                    values[index] = data[key][internal_key]
+                else:
+                    # ToDo handle undefined key
+                    ...
         elif key != "weather":
-            columns = ", ".join([columns, key])
-            values.append(data[key])
+            if key in columns:
+                index = columns.index(key)
+                values[index] = data[key]
+            else:
+                # ToDo handle undefined key
+                ...
 
-    return columns.strip(", "), values
+    return values
 
 
-def insert_weather():
+def insert_weather(data):
     """
     Wether in the OpenWeather API contain a list of one or more instance of type dictionary.
     To handle this specific situation a separate function is needed
@@ -80,12 +124,20 @@ def insert_weather():
         weather_pk = cursor.execute(
             f"select id from weather where id = {weather_id}"
         ).fetchall()
-
+        columns = ["id", "main", "description", "icon"]
+        values = [None] * 4
+        for i in instance:
+            if i in columns:
+                index = columns.index(i)
+                values[index] = instance[i]
+            else:
+                # ToDo handle undefined key
+                ... 
         # if the id doesn't already exist in the weather table
         if len(weather_pk) == 0:
-            sql_insert = "INSERT INTO weather ({}) VALUES ({});".format(
-                (", ".join(instance.keys())), ", ".join("%s" for _ in instance)
-            )
+            columns = "id, main, description, icon"
+            place_holder = "%s"+", %s"*3
+            sql_insert = f"INSERT INTO weather ({columns}) VALUES ({place_holder});"
             cursor.execute(sql_insert, list(instance.values()))
 
             # checking if the insert was successful
@@ -105,7 +157,6 @@ def insert_weather():
 
 while True:
     response_code, data = call_api()
-
     # handle if the response code indicates an error
     if response_code != 200:
         print(f"Failed to fetch data. Response code: {response_code}.")
@@ -119,13 +170,14 @@ while True:
     cursor = connection.cursor()
 
     # collect the SQL query parameters
-    columns, values = get_query_params(data)
+    values = get_query_params(data)
 
     # insert in the DB
     try:
-        sql_insert = "INSERT INTO api_res ({}) VALUES ({});".format(
-            columns, ", ".join("%s" for _ in columns.split(","))
-        )
+        columns = "coord_lon, coord_lat, base, main_temp, main_feels_like, main_temp_min, main_temp_max, main_pressure, main_humidity, main_sea_level ,main_grnd_level, visibility, wind_speed, wind_deg, wind_gust, dt, sys_type, sys_id, sys_message, sys_country, sys_sunrise, sys_sunset, timezone, id, name, cod, clouds_all, rain_1h, rain_3h, snow_1h, snow_3h"
+        place_holder = "%s"+",%s"*30
+        sql_insert = f"INSERT INTO api_res ({columns}) VALUES ({place_holder});"
+    
         cursor.execute(sql_insert, values)
         if cursor.rowcount == 0:
             raise Exception()
@@ -136,7 +188,7 @@ while True:
         if cursor.rowcount == 0:
             raise Exception(1)
 
-        insert_weather()
+        insert_weather(data)
 
     except Exception as error:
         if error.args == 1:
