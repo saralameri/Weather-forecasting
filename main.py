@@ -88,20 +88,19 @@ def get_query_params(data):
     for key in data:
         if isinstance(data[key], dict) and key != "weather":
             for internal_key in data[key]:
-                name = f"{key}_" + internal_key
+                name = f"{key}_{internal_key}"
                 if name in columns:
                     index = columns.index(name)
                     values[index] = data[key][internal_key]
                 else:
-                    # ToDo handle undefined key
-                    ...
+                    raise Exception()
+                
         elif key != "weather":
             if key in columns:
                 index = columns.index(key)
                 values[index] = data[key]
             else:
-                # ToDo handle undefined key
-                ...
+                raise Exception()
 
     return values
 
@@ -134,8 +133,8 @@ def insert_weather(data):
                 index = columns.index(i)
                 values[index] = instance[i]
             else:
-                # ToDo handle undefined key
-                ... 
+                raise Exception(1)
+            
         # if the id doesn't already exist in the weather table
         if len(weather_pk) == 0:
             columns = "id, main, description, icon"
