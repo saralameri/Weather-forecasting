@@ -1,7 +1,10 @@
+import logging
 import requests
 import psycopg
 import time
 from config import Config
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s[%(asctime)s]: %(message)s")
 
 config = Config()
 
@@ -150,7 +153,7 @@ def insert_weather(data):
 
         # checking if the insert was successful
         if cursor.rowcount > 0:
-            print(f"Successfully added API call {PK} to the database.")
+            logging.info(f"Successfully added API call {PK} to the database.")
         else:
             raise Exception(1)
 
@@ -159,11 +162,11 @@ while True:
     response_code, data = call_api()
     # handle if the response code indicates an error
     if response_code != 200:
-        print(f"Failed to fetch data. Response code: {response_code}.")
+        logging.error(f"Failed to fetch data. Response code: {response_code}.")
         break
     
     # If the response code indicates a successful request continue with the rest of the code
-    print(f"successful API call. Response code: {response_code}.")
+    logging.info(f"Successful API call. Response code: {response_code}.")
     connection = psycopg.connect(DB_CONNECTION)
 
     # Open a cursor to perform database operations
@@ -193,10 +196,11 @@ while True:
     except Exception as error:
         if error.args == 1:
             delete_incomplete_row()
-        print('Error: Failed to add to the database')
+        logging.error('Failed to add to the database')
         
     cursor.close()
     connection.commit()
     connection.close()
 
+    logging.info("Pausing for 5 minutes")
     time.sleep(300)  # 300 sec = 5 min
