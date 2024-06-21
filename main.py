@@ -11,8 +11,6 @@ config = Config()
 DB_CONNECTION = config.get("DB_CONNECTION")
 API_CALL = config.get("API_CALL")
 
-def delete_incomplete_row():
-    cursor.execute("delete from api_res order by res_id desc limit 1")
 
 def call_api():
     """A simple function that calls the API and return its response code and response body"""
@@ -29,7 +27,7 @@ def call_api():
     return response_code, data
 
 
-def get_query_params(data):
+def get_query_params(data, columns):
     """
     Iterating through the response body gathering the SQL query parameters.
     Two things are collected, the columns and the values to store in them.
@@ -44,42 +42,8 @@ def get_query_params(data):
     data -> json
     """
 
-    # columns stores SQL query columns in a string
-    columns = [
-        "coord_lon",
-        "coord_lat",
-        "base",
-        "main_temp",
-        "main_feels_like",
-        "main_temp_min",
-        "main_temp_max",
-        "main_pressure",
-        "main_humidity",
-        "main_sea_level",
-        "main_grnd_level",
-        "visibility",
-        "wind_speed",
-        "wind_deg",
-        "wind_gust",
-        "dt",
-        "sys_type",
-        "sys_id",
-        "sys_message",
-        "sys_country",
-        "sys_sunrise",
-        "sys_sunset",
-        "timezone",
-        "id",
-        "name",
-        "cod",
-        "clouds_all",
-        "rain_1h",
-        "rain_3h",
-        "snow_1h",
-        "snow_3h"
-    ]
-
     # values stores SQL query values (initialized to NONE) in a list 
+    cols = columns.split(',')
     values = [None] * 31
 
 
@@ -89,18 +53,18 @@ def get_query_params(data):
         if isinstance(data[key], dict) and key != "weather":
             for internal_key in data[key]:
                 name = f"{key}_{internal_key}"
-                if name in columns:
-                    index = columns.index(name)
+                if name in cols:
+                    index = cols.index(name)
                     values[index] = data[key][internal_key]
                 else:
-                    raise Exception()
+                    raise Exception("key in API is not recognized")
                 
         elif key != "weather":
-            if key in columns:
-                index = columns.index(key)
+            if key in cols:
+                index = cols.index(key)
                 values[index] = data[key]
             else:
-                raise Exception()
+                raise Exception("key in API is not recognized")
 
     return values
 
@@ -126,35 +90,42 @@ def insert_weather(data):
         weather_pk = cursor.execute(
             f"select id from weather where id = {weather_id}"
         ).fetchall()
-        columns = ["id", "main", "description", "icon"]
+        cols = ["id", "main", "description", "icon"]
         values = [None] * 4
         for i in instance:
-            if i in columns:
-                index = columns.index(i)
+            if i in cols:
+                index = cols.index(i)
                 values[index] = instance[i]
             else:
-                raise Exception(1)
+                raise Exception("key in API is not recognized")
             
         # if the id doesn't already exist in the weather table
         if len(weather_pk) == 0:
-            columns = "id, main, description, icon"
-            place_holder = "%s"+", %s"*3
-            sql_insert = f"INSERT INTO weather ({columns}) VALUES ({place_holder});"
-            cursor.execute(sql_insert, list(instance.values()))
-
             # checking if the insert was successful
-            if cursor.rowcount == 0:
-                raise Exception(1)
+            try:
+                place_holder = "%s"+", %s"*3
+                sql_insert = f"INSERT INTO weather (id, main, description, icon) VALUES ({place_holder});"
+                cursor.execute(sql_insert, list(instance.values()))
+            except Exception as error:
+                raise Exception(f"Failed to inserting the weather key to the database. {error}")
+
+            # if cursor.rowcount == 0:
+            #     raise Exception("Failed to inserting the weather key to the database")
 
         # update the relation table
-        sql_insert = "INSERT INTO res_weather_relation (res_id, weather_id) VALUES (%s, %s);"
-        cursor.execute(sql_insert, (PK, instance["id"]))
+        try:
+            cols = "res_id, weather_id"
+            sql_insert = f"INSERT INTO res_weather_relation ({cols}) VALUES (%s, %s);"
+            cursor.execute(sql_insert, (PK, instance["id"]))
+            logging.info(f"Successfully added API call {PK} to the database.")
+        except Exception as error:
+                raise Exception(f"Failed to inserting into res_weather_relation table. {error}")
 
         # checking if the insert was successful
-        if cursor.rowcount > 0:
-            logging.info(f"Successfully added API call {PK} to the database.")
-        else:
-            raise Exception(1)
+        # if cursor.rowcount > 0:
+        #     logging.info(f"Successfully added API call {PK} to the database.")
+        # else:
+        #     raise Exception("Failed to inserting into res_weather_relation table.")
 
 
 while True:
@@ -171,31 +142,29 @@ while True:
     # Open a cursor to perform database operations
     cursor = connection.cursor()
 
-    # collect the SQL query parameters
-    values = get_query_params(data)
-
     # insert in the DB
     try:
-        columns = "coord_lon, coord_lat, base, main_temp, main_feels_like, main_temp_min, main_temp_max, main_pressure, main_humidity, main_sea_level ,main_grnd_level, visibility, wind_speed, wind_deg, wind_gust, dt, sys_type, sys_id, sys_message, sys_country, sys_sunrise, sys_sunset, timezone, id, name, cod, clouds_all, rain_1h, rain_3h, snow_1h, snow_3h"
+        columns = "coord_lon,coord_lat,base,main_temp,main_feels_like,main_temp_min,main_temp_max,main_pressure,main_humidity,main_sea_level,main_grnd_level,visibility,wind_speed,wind_deg,wind_gust,dt,sys_type,sys_id,sys_message,sys_country,sys_sunrise,sys_sunset,timezone,id,name,cod,clouds_all,rain_1h,rain_3h,snow_1h,snow_3h"
         place_holder = "%s"+",%s"*30
+        # collect the SQL query parameters
+        values = get_query_params(data, columns)
         sql_insert = f"INSERT INTO api_res ({columns}) VALUES ({place_holder});"
     
         cursor.execute(sql_insert, values)
         if cursor.rowcount == 0:
-            raise Exception()
+            raise Exception("Failed to insert into api_res table")
 
         PK = cursor.execute(
             "SELECT res_id FROM api_res ORDER BY res_id DESC LIMIT 1"
         ).fetchone()[0]
         if cursor.rowcount == 0:
-            raise Exception(1)
+            raise Exception("Failed to fetch the primary key of the later row in the api_res table")
 
         insert_weather(data)
 
     except Exception as error:
-        if error.args == 1:
-            delete_incomplete_row()
-        logging.error('Failed to add to the database')
+        connection.rollback()
+        logging.error(error)
         
     cursor.close()
     connection.commit()
