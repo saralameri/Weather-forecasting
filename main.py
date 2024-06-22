@@ -4,7 +4,9 @@ import psycopg
 import time
 from config import Config
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s[%(asctime)s]: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(levelname)s[%(asctime)s]: %(message)s"
+)
 
 config = Config()
 
@@ -42,12 +44,9 @@ def get_query_params(data, columns):
     data -> json
     """
 
-    # values stores SQL query values (initialized to NONE) in a list 
-    cols = columns.split(',')
+    # values stores SQL query values (initialized to NONE) in a list
+    cols = columns.split(",")
     values = [None] * 31
-
-
-
 
     for key in data:
         if isinstance(data[key], dict) and key != "weather":
@@ -58,7 +57,7 @@ def get_query_params(data, columns):
                     values[index] = data[key][internal_key]
                 else:
                     raise Exception("key in API is not recognized")
-                
+
         elif key != "weather":
             if key in cols:
                 index = cols.index(key)
@@ -98,16 +97,18 @@ def insert_weather(data):
                 values[index] = instance[i]
             else:
                 raise Exception("key in API is not recognized")
-            
+
         # if the id doesn't already exist in the weather table
         if len(weather_pk) == 0:
             # checking if the insert was successful
             try:
-                place_holder = "%s"+", %s"*3
+                place_holder = "%s" + ", %s" * 3
                 sql_insert = f"INSERT INTO weather (id, main, description, icon) VALUES ({place_holder});"
                 cursor.execute(sql_insert, list(instance.values()))
             except Exception as error:
-                raise Exception(f"Failed to inserting the weather key to the database. {error}")
+                raise Exception(
+                    f"Failed to inserting the weather key to the database. {error}"
+                )
 
             # if cursor.rowcount == 0:
             #     raise Exception("Failed to inserting the weather key to the database")
@@ -119,7 +120,9 @@ def insert_weather(data):
             cursor.execute(sql_insert, (PK, instance["id"]))
             logging.info(f"Successfully added API call {PK} to the database.")
         except Exception as error:
-                raise Exception(f"Failed to inserting into res_weather_relation table. {error}")
+            raise Exception(
+                f"Failed to inserting into res_weather_relation table. {error}"
+            )
 
         # checking if the insert was successful
         # if cursor.rowcount > 0:
@@ -134,7 +137,7 @@ while True:
     if response_code != 200:
         logging.error(f"Failed to fetch data. Response code: {response_code}.")
         break
-    
+
     # If the response code indicates a successful request continue with the rest of the code
     logging.info(f"Successful API call. Response code: {response_code}.")
     connection = psycopg.connect(DB_CONNECTION)
@@ -145,11 +148,11 @@ while True:
     # insert in the DB
     try:
         columns = "coord_lon,coord_lat,base,main_temp,main_feels_like,main_temp_min,main_temp_max,main_pressure,main_humidity,main_sea_level,main_grnd_level,visibility,wind_speed,wind_deg,wind_gust,dt,sys_type,sys_id,sys_message,sys_country,sys_sunrise,sys_sunset,timezone,id,name,cod,clouds_all,rain_1h,rain_3h,snow_1h,snow_3h"
-        place_holder = "%s"+",%s"*30
+        place_holder = "%s" + ",%s" * 30
         # collect the SQL query parameters
         values = get_query_params(data, columns)
         sql_insert = f"INSERT INTO api_res ({columns}) VALUES ({place_holder});"
-    
+
         cursor.execute(sql_insert, values)
         if cursor.rowcount == 0:
             raise Exception("Failed to insert into api_res table")
@@ -158,14 +161,16 @@ while True:
             "SELECT res_id FROM api_res ORDER BY res_id DESC LIMIT 1"
         ).fetchone()[0]
         if cursor.rowcount == 0:
-            raise Exception("Failed to fetch the primary key of the later row in the api_res table")
+            raise Exception(
+                "Failed to fetch the primary key of the later row in the api_res table"
+            )
 
         insert_weather(data)
 
     except Exception as error:
         connection.rollback()
         logging.error(error)
-        
+
     cursor.close()
     connection.commit()
     connection.close()
